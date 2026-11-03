@@ -1,10 +1,15 @@
-# prestamos-lab
-API REST de préstamos de equipos de laboratorio - SENATI
 # Préstamos Lab · API REST
 
 API REST para controlar el préstamo de equipos de laboratorio. Registra equipos, préstamos y devoluciones, impide que un mismo equipo tenga dos préstamos activos y protege las operaciones con autenticación JWT.
 
 **SENATI Huánuco · CFP Amarilis** · Curso: Fullstack Developer Software · Instructor: Ing. Darwin Uzuriaga Claudio
+
+## Integrantes
+
+| Integrante | Usuario GitHub |
+|---|---|
+| Wilfredo Alcedo | wilfredoalced-byte |
+| Saúl Espinoza Palacios | espinozapalaciossaul-lgtm |
 
 ## Tecnologías
 
@@ -31,7 +36,6 @@ npm install
 ```
 
 ## Configuración del archivo .env
-
 
 Copiar la plantilla y completar los datos:
 
@@ -62,14 +66,15 @@ npx sequelize-cli db:migrate      # crea las tablas usuarios, equipos y prestamo
 npx sequelize-cli db:seed:all     # carga datos de prueba ficticios
 ```
 
-**Modelo de datos**
+### Modelo de datos
 
-- `usuarios` (id, nombre, correo único, password_hash)
+| Tabla | Campos |
+|---|---|
+| usuarios | id, nombre, correo (único), password_hash |
+| equipos | id, codigo (único), nombre, categoria, condicion |
+| prestamos | id, equipo_id, usuario_id, prestatario, fecha_prestamo, fecha_prevista, fecha_devolucion |
 
-- `equipos` (id, código único, nombre, categoría, condición)
-- `prestamos` (id, equipo_id, usuario_id, prestatario, fecha_prestamo, fecha_prevista, fecha_devolucion)
-
-Relaciones: un usuario registra varios préstamos y un equipo conserva varios préstamos históricos. Un préstamo está **activo** cuando `fecha_devolucion` es NULL.
+**Relaciones:** un usuario registra varios préstamos (`prestamos.usuario_id → usuarios.id`) y un equipo conserva varios préstamos históricos (`prestamos.equipo_id → equipos.id`). Un préstamo está **activo** cuando `fecha_devolucion` es NULL.
 
 **Usuario de prueba:** `ana@ejemplo.com` / `Clave123`
 
@@ -77,7 +82,7 @@ Relaciones: un usuario registra varios préstamos y un equipo conserva varios pr
 
 ```bash
 npm run dev     # desarrollo (se reinicia al guardar cambios)
-npm start       # normal
+npm start       # ejecución normal
 ```
 
 El servidor queda en `http://localhost:3000`. Para comprobarlo: `GET /api/salud`.
@@ -95,15 +100,41 @@ Las rutas de equipos y préstamos requieren el encabezado `Authorization: Bearer
 | GET / POST | /api/prestamos | Consultar o registrar préstamos |
 | PUT | /api/prestamos/:id/devolucion | Registrar devolución |
 
-**Filtros de consulta de préstamos**
+### Filtros de consulta de préstamos
 
 | Parámetro | Ejemplo | Resultado |
-
 |---|---|---|
 | activos | `/api/prestamos?activos=true` | Solo préstamos sin devolución |
 | equipo_id | `/api/prestamos?equipo_id=2` | Historial de un equipo |
 
 Se pueden combinar: `/api/prestamos?activos=true&equipo_id=2`
+
+### Ejemplos de cuerpos JSON
+
+Registro:
+```json
+{ "nombre": "Usuario Prueba", "correo": "usuario@ejemplo.com", "password": "Secreto123" }
+```
+
+Login:
+```json
+{ "correo": "ana@ejemplo.com", "password": "Clave123" }
+```
+
+Crear equipo:
+```json
+{ "codigo": "LAB-005", "nombre": "Taladro", "categoria": "Herramientas", "condicion": "bueno" }
+```
+
+Registrar préstamo:
+```json
+{ "equipo_id": 2, "prestatario": "Estudiante Ficticio", "fecha_prestamo": "2026-11-03", "fecha_prevista": "2026-11-07" }
+```
+
+Registrar devolución (la fecha es opcional; si no se envía se usa la de hoy):
+```json
+{ "fecha_devolucion": "2026-11-05" }
+```
 
 ## Códigos de respuesta
 
@@ -123,6 +154,7 @@ Se pueden combinar: `/api/prestamos?activos=true&equipo_id=2`
 - Al registrar la devolución el equipo vuelve a estar disponible.
 - No se puede eliminar un equipo que tiene historial de préstamos.
 - El usuario autenticado queda registrado como responsable del préstamo.
+- Las consultas se hacen con el ORM Sequelize, sin concatenar entradas en SQL.
 
 ## Estructura del proyecto
 
@@ -131,7 +163,6 @@ prestamos-lab/
 ├── config/          configuración de la base de datos
 ├── migrations/      creación de tablas
 ├── seeders/         datos de prueba ficticios
-
 └── src/
     ├── controllers/ lógica de cada operación
     ├── middleware/  verificación del token JWT
@@ -147,7 +178,7 @@ prestamos-lab/
 | Integrante | Responsabilidades |
 |---|---|
 | Wilfredo Alcedo | Entorno y repositorio, base de datos MySQL, migraciones, seeders, modelos y relaciones, servidor Express, registro y login con JWT, middleware de autenticación, README |
-| NOMBRE DEL COMPAÑERO | Validaciones, CRUD de equipos, préstamos y devoluciones, filtros de consulta, pruebas en Postman |
+| Saúl Espinoza Palacios | Validaciones, CRUD de equipos, préstamos y devoluciones, filtros de consulta, pruebas en Postman |
 
 ## Herramientas de apoyo
 
