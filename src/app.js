@@ -15,6 +15,7 @@ app.get('/api/salud', (req, res) => {
 // RUTAS DE LA API
 // (las iremos agregando aquí)
 app.use('/api/auth', require('./routes/auth.routes'));
+app.use('/api/equipos', require('./routes/equipos.routes'));
 // Ruta no encontrada → 404
 app.use((req, res) => {
   res.status(404).json({ error: `Ruta no encontrada: ${req.method} ${req.originalUrl}` });
